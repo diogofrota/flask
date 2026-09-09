@@ -102,8 +102,43 @@ def listar_usuarios():
         usuarios=usuarios
     )
 
+@app.route("/usuarios/novo", methods=["GET", "POST"])
+def novo_usuario():
+
+    if "usuario" not in session:
+        return redirect(url_for("login"))
+
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+        role = request.form["role"]
+
+        usuario_existente = Usuario.query.filter_by(username=username).first()
+
+        if usuario_existente:
+            return "Usuário já existe"
+
+        usuario = Usuario(
+            username=username,
+            password=generate_password_hash(
+                password,
+                method="pbkdf2:sha256"
+            ),
+            role=role
+        )
+
+        db.session.add(usuario)
+        db.session.commit()
+
+        return redirect(url_for("listar_usuarios"))
+
+    return render_template("novo_usuario.html")
+
 
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect(url_for("login"))
+
+
+
