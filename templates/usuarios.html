@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Usuários</title>
+</head>
+
+<body>
+
+    <h1>Usuários cadastrados</h1>
+
+    {% for usuario in usuarios %}
+
+        <p>
+            ID: {{ usuario.id }}
+            |
+            Usuário: {{ usuario.username }}
+            |
+            Perfil: {{ usuario.role }}
+        </p>
+
+    {% endfor %}
+
+</body>
+</html>
