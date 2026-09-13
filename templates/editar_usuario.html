@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Usuário</title>
+</head>
+
+<body>
+
+    <h1>Editar usuário</h1>
+
+    <!-- Formulário de edição -->
+    <form method="POST">
+
+        <!-- Mostra o username atual -->
+        <label for="username">Usuário:</label>
+        <input
+            type="text"
+            id="username"
+            name="username"
+            value="{{ usuario.username }}"
+            required
+        >
+
+        <br><br>
+
+        <!-- Nova senha é opcional -->
+        <label for="password">Nova senha:</label>
+        <input
+            type="password"
+            id="password"
+            name="password"
+        >
+
+        <br><br>
+
+        <!-- Perfil atual do usuário -->
+        <label for="role">Perfil:</label>
+
+        <select id="role" name="role">
+
+            <option
+                value="user"
+                {% if usuario.role == "user" %}selected{% endif %}
+            >
+                Usuário
+            </option>
+
+            <option
+                value="admin"
+                {% if usuario.role == "admin" %}selected{% endif %}
+            >
+                Administrador
+            </option>
+
+        </select>
+
+        <br><br>
+
+        <!-- Salva as alterações -->
+        <button type="submit">
+            Salvar alterações
+        </button>
+
+    </form>
+
+</body>
+</html>

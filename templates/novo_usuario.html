@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastrar Usuário</title>
+</head>
+
+<body>
+
+    <h1>Cadastrar novo usuário</h1>
+
+    <!-- Formulário para cadastrar um novo usuário -->
+    <form method="POST" action="/novo_usuario">
+
+        <!-- Campo do nome de usuário -->
+        <label for="username">Usuário:</label>
+        <input type="text" id="username" name="username" required>
+
+        <br><br>
+
+        <!-- Campo da senha -->
+        <label for="password">Senha:</label>
+        <input type="password" id="password" name="password" required>
+
+        <br><br>
+
+        <!-- Seleção do perfil do usuário -->
+        <label for="role">Perfil:</label>
+        <select id="role" name="role" required>
+            <option value="user">Usuário</option>
+            <option value="admin">Administrador</option>
+        </select>
+
+        <br><br>
+
+        <!-- Envia os dados do formulário -->
+        <button type="submit">Cadastrar</button>
+
+    </form>
+
+    <br>
+
+    <!-- Volta para a listagem de usuários -->
+    <a href="/usuarios">Voltar para usuários</a>
+
+</body>
+</html>

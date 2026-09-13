@@ -1,5 +1,8 @@
-from flask import Flask, render_template, request,session, redirect, url_for
+from flask import Flask, render_template, request,session, redirect, url_for, flash
+#funcão para o decorador:
+from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
+
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
@@ -86,14 +89,17 @@ def admin():
     if session["role"] != "admin":
         return "Acesso negado", 403
 
+
     return render_template("painel_admin.html", usuario=session["usuario"])
 
 
 @app.route("/usuarios")
+@login_required # -> coloquei so no listar usurio para servir de exemplo.
 def listar_usuarios():
 
-    if "usuario" not in session:
-        return redirect(url_for("login"))
+    # vou tirar essa funcao so para colocar o decorador
+#   if "usuario" not in session:
+#       return redirect(url_for("login"))
 
     usuarios = Usuario.query.all()
 
@@ -102,12 +108,14 @@ def listar_usuarios():
         usuarios=usuarios
     )
 
-@app.route("/usuarios/novo", methods=["GET", "POST"])
+@app.route("/novo_usuario", methods=["GET", "POST"])
 def novo_usuario():
 
+    # caso usuario não estaja logado
     if "usuario" not in session:
         return redirect(url_for("login"))
 
+    # pega os dados do post
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
@@ -115,9 +123,12 @@ def novo_usuario():
 
         usuario_existente = Usuario.query.filter_by(username=username).first()
 
+        #  verifica se tem registro
         if usuario_existente:
+            flash("Usuário já existe.", "error") # msg usuario exitente.
             return "Usuário já existe"
 
+        # instancia da classe usuraio ( lembrando que esta com U maisculo )
         usuario = Usuario(
             username=username,
             password=generate_password_hash(
@@ -130,9 +141,86 @@ def novo_usuario():
         db.session.add(usuario)
         db.session.commit()
 
+        flash("Usuário cadastrado com sucesso.", "success")
+
         return redirect(url_for("listar_usuarios"))
 
     return render_template("novo_usuario.html")
+
+@app.route("/usuarios/<int:id>/editar", methods=["GET", "POST"])
+def editar_usuario(id):
+
+    # Bloqueia quem não está logado
+    if "usuario" not in session:
+        return redirect(url_for("login"))
+
+    # Busca o usuário pelo ID
+    usuario = Usuario.query.get_or_404(id)
+
+    # Processa o formulário enviado
+    if request.method == "POST":
+        usuario.username = request.form["username"]
+        usuario.role = request.form["role"]
+
+        # Atualiza a senha somente se uma nova senha for digitada
+        nova_senha = request.form["password"]
+
+        if nova_senha:
+            usuario.password = generate_password_hash(
+                nova_senha,
+                method="pbkdf2:sha256"
+            )
+
+        # Salva as alterações no banco
+        db.session.commit()
+
+        # Cria mensagem de sucesso
+        flash("Usuário atualizado com sucesso.", "success")
+
+        return redirect(url_for("listar_usuarios"))
+
+    # Mostra o formulário com os dados atuais
+    return render_template(
+        "editar_usuario.html",
+        usuario=usuario
+    )
+
+
+@app.route("/usuarios/<int:id>/excluir", methods=["POST"])
+def excluir_usuario(id):
+
+    # Bloqueia quem não está logado
+    if "usuario" not in session:
+        return redirect(url_for("login"))
+
+    # Busca o usuário pelo ID
+    usuario = Usuario.query.get_or_404(id)
+
+    # Remove o usuário da sessão do banco
+    db.session.delete(usuario)
+
+    # Confirma a exclusão no PostgreSQL
+    db.session.commit()
+
+    # Cria mensagem de sucesso
+    flash("Usuário excluído com sucesso.", "success")
+
+    return redirect(url_for("listar_usuarios"))
+
+
+# Protege rotas que exigem login
+def login_required(funcao):
+
+    @wraps(funcao)
+    def verificar_login(*args, **kwargs):
+
+        if "usuario" not in session:
+            return redirect(url_for("login"))
+
+        return funcao(*args, **kwargs)
+
+    return verificar_login
+
 
 
 @app.route("/logout")
